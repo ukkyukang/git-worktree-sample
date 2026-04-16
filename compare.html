@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Worktree — 3-Way Comparison</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-bottom: 1px solid rgba(130, 100, 255, 0.3);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #a78bfa, #6dd5ed, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .subtitle {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .git-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .git-info code {
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #a78bfa;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* ── Frame Container ── */
+        .frames {
+            display: flex;
+            flex: 1;
+            gap: 2px;
+            padding: 2px;
+            background: #0a0a0f;
+            min-height: 0;
+        }
+
+        .frame-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.3s ease;
+            min-width: 0;
+        }
+
+        .frame-wrapper:hover {
+            border-color: rgba(130, 100, 255, 0.5);
+        }
+
+        .frame-wrapper:nth-child(1) { border-color: rgba(99, 102, 241, 0.4); }
+        .frame-wrapper:nth-child(2) { border-color: rgba(167, 139, 250, 0.4); }
+        .frame-wrapper:nth-child(3) { border-color: rgba(52, 211, 153, 0.4); }
+
+        /* ── Frame Label ── */
+        .frame-label {
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .frame-wrapper:nth-child(1) .frame-label {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), transparent);
+        }
+        .frame-wrapper:nth-child(2) .frame-label {
+            background: linear-gradient(90deg, rgba(167, 139, 250, 0.2), transparent);
+        }
+        .frame-wrapper:nth-child(3) .frame-label {
+            background: linear-gradient(90deg, rgba(52, 211, 153, 0.2), transparent);
+        }
+
+        .frame-label .name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .frame-label .branch {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .frame-wrapper:nth-child(1) .name { color: #818cf8; }
+        .frame-wrapper:nth-child(1) .branch {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+        }
+        .frame-wrapper:nth-child(2) .name { color: #c4b5fd; }
+        .frame-wrapper:nth-child(2) .branch {
+            background: rgba(167, 139, 250, 0.2);
+            color: #c4b5fd;
+        }
+        .frame-wrapper:nth-child(3) .name { color: #34d399; }
+        .frame-wrapper:nth-child(3) .branch {
+            background: rgba(52, 211, 153, 0.2);
+            color: #34d399;
+        }
+
+        /* ── iframes ── */
+        iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #111;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            background: #111118;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #555;
+            flex-shrink: 0;
+        }
+
+        .footer .status {
+            display: flex;
+            gap: 16px;
+        }
+
+        .footer .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        .dot.green { background: #34d399; }
+        .dot.purple { background: #a78bfa; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>🔀 Git Worktree — 3-Way Comparison</h1>
+            <div class="subtitle">Compare three parallel branches side by side</div>
+        </div>
+        <div class="git-info">
+            <code>git worktree list</code>
+            <code>3 worktrees active</code>
+        </div>
+    </div>
+
+    <!-- 3-Column iframes -->
+    <div class="frames">
+        <!-- Main Branch -->
+        <div class="frame-wrapper">
+            <div class="frame-label">
+                <span class="name">📊 Original — Baseline</span>
+                <span class="branch">main</span>
+            </div>
+            <iframe src="http://localhost:8501" title="Main Branch"></iframe>
+        </div>
+
+        <!-- Dark Theme Branch -->
+        <div class="frame-wrapper">
+            <div class="frame-label">
+                <span class="name">🌙 Dark Theme</span>
+                <span class="branch">feature/dark-theme</span>
+            </div>
+            <iframe src="http://localhost:8502" title="Dark Theme Branch"></iframe>
+        </div>
+
+        <!-- Analytics Branch -->
+        <div class="frame-wrapper">
+            <div class="frame-label">
+                <span class="name">🔬 Analytics</span>
+                <span class="branch">feature/analytics</span>
+            </div>
+            <iframe src="http://localhost:8503" title="Analytics Branch"></iframe>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="status">
+            <span><span class="dot green"></span>Ports: 8501 · 8502 · 8503</span>
+            <span><span class="dot purple"></span>All servers running</span>
+        </div>
+        <span>Git Worktree Demo · Built with Streamlit</span>
+    </div>
+</body>
+</html>
