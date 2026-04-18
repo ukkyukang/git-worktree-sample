@@ -5,130 +5,120 @@
 
 ## 📌 상태-액션 매핑 다이어그램 (State-Action Graph)
 
-이 다이어그램은 철저히 **상태(원형 박스)**와 그 상태 간의 이동을 유도하는 **액션(사각 박스)**으로 나뉘어 있습니다.
-사용자의 요청에 따라, 하단에 설명된 **1번부터 30번까지의 모든 위기 탈출 상황이 각각 독립된 30개의 액션 박스로 완전히 개별 매핑**되어 있습니다. (각 박스에는 기능 이름 / 설명 / 명령어 요약이 들어있습니다)
+이 다이어그램은 **Git 파일 상태의 5단계 순서(위에서 아래)**를 기준으로, 
+상태를 전진시키거나 과거 상태로 역추적(Undo)하는 **30가지의 모든 Git 해결 조치들**을 각각의 개별 액션 박스로 표현했습니다.
 
 ```mermaid
 graph TD
     %% =======================
-    %% 🔵 상태(States) 노드 정의
+    %% 노드 정의 (상태)
     %% =======================
-    S_UNMOD(((<b>Unmodified</b><br/>수정 없음)))
-    S_MOD(((<b>Modified</b><br/>파일 수정됨)))
-    S_STG(((<b>Staged</b><br/>커밋 대기중)))
-    S_COM(((<b>Committed</b><br/>로컬 커밋됨)))
-    S_REM(((<b>Pushed</b><br/>원격에 올라감)))
-    S_STASH(((<b>Stashed</b><br/>임시 보관됨)))
+    S_UNMOD(("<b>1. Unmodified</b><br/>수정 없음"))
+    S_MOD(("<b>2. Modified</b><br/>파일 수정됨"))
+    S_STG(("<b>3. Staged</b><br/>커밋 대기중"))
+    S_COM(("<b>4. Committed</b><br/>로컬에 저장됨"))
+    S_REM(("<b>5. Pushed</b><br/>원격에 올라감"))
+    S_STASH(("<b>보류 (Stashed)</b><br/>임시 보관됨"))
 
     %% =======================
-    %% 🟩 30가지 개별 액션(Actions) 정의
+    %% 노드 정의 (실행 명령어 박스)
     %% =======================
-    
-    %% 1. 스테이징 & 작업 영역
-    A1["<b>1. Restore</b><br/>파일 상태 복구<br/><i>git restore</i>"]
+    A1["<b>1. Restore</b><br/>수정 취소<br/><i>git restore</i>"]
     A2["<b>2. Clean</b><br/>미추적 삭제<br/><i>git clean -fd</i>"]
     A3["<b>3. Unstage File</b><br/>특정 파일 내리기<br/><i>git restore --staged</i>"]
     A4["<b>4. Unstage All</b><br/>전부 내리기<br/><i>git reset</i>"]
     A5["<b>5. Checkout HEAD</b><br/>마지막 커밋 복구<br/><i>git checkout HEAD</i>"]
-
-    %% 2. 커밋 실수 수습
+    
     A6["<b>6. Amend Msg</b><br/>메시지 수정<br/><i>git commit --amend</i>"]
-    A7["<b>7. Amend Add</b><br/>누락 파일 추가<br/><i>git commit --amend</i>"]
+    A7["<b>7. Amend Add</b><br/>누락 추가<br/><i>git commit --amend</i>"]
     A8["<b>8. Soft Reset</b><br/>커밋만 취소<br/><i>git reset --soft</i>"]
     A9["<b>9. Mixed Reset</b><br/>커밋+Add 취소<br/><i>git reset HEAD</i>"]
-    A10["<b>10. Hard Reset</b><br/>완전 다 버림<br/><i>git reset --hard</i>"]
+    A10["<b>10. Hard Reset</b><br/>완전 다 휴지통으로<br/><i>git reset --hard</i>"]
     A11["<b>11. Revert</b><br/>원격 푸시 되돌림<br/><i>git revert</i>"]
 
-    %% 3. 브랜치 병합 및 충돌
-    A12["<b>12. Rename Branch</b><br/>브랜치명 변경<br/><i>git branch -m</i>"]
+    A12["<b>12. Rename Branch</b><br/>이름 변경<br/><i>git branch -m</i>"]
     A13["<b>13. Delete Branch</b><br/>로컬 브랜치 삭제<br/><i>git branch -d</i>"]
     A14["<b>14. Prune</b><br/>원격 브랜치 청소<br/><i>git fetch -p</i>"]
-    A15["<b>15. Branch Late</b><br/>뒤늦게 브랜치 파생<br/><i>git checkout -b</i>"]
-    A16["<b>16. Cherry-Pick</b><br/>특정 커밋 가져오기<br/><i>git cherry-pick</i>"]
-    A17["<b>17. Merge Abort</b><br/>병합 취소<br/><i>git merge --abort</i>"]
+    A15["<b>15. Branch Late</b><br/>뒤늦게 브랜치 따기<br/><i>git checkout -b</i>"]
+    A16["<b>16. Cherry-Pick</b><br/>남의 커밋 훔치기<br/><i>git cherry-pick</i>"]
+    
+    A17["<b>17. Merge Abort</b><br/>병합 취소하기<br/><i>git merge --abort</i>"]
     A18["<b>18. Resolve Merge</b><br/>충돌 해결 후 병합<br/><i>git commit</i>"]
-    A19["<b>19. Hard Reset Origin</b><br/>서버와 완전 동기화<br/><i>git reset --hard origin</i>"]
+    A19["<b>19. Hard Reset Origin</b><br/>서버동기화 (로컬포기)<br/><i>git reset --hard origin</i>"]
 
-    %% 4. 임시 공간 (Stash)
     A20["<b>20. Stash Save</b><br/>작업 임시 보관<br/><i>git stash save</i>"]
-    A21["<b>21. Stash Pop</b><br/>작업 다시 꺼내오기<br/><i>git stash pop</i>"]
+    A21["<b>21. Stash Pop</b><br/>보관 불러오기<br/><i>git stash pop</i>"]
     A22["<b>22. Stash List</b><br/>보관 목록 보기<br/><i>git stash list</i>"]
     A23["<b>23. Stash Clear</b><br/>보관소 비우기<br/><i>git stash clear</i>"]
 
-    %% 5. 캐시 및 무시
     A24["<b>24. RM Cached</b><br/>추적에서만 빼기<br/><i>git rm --cached</i>"]
-    A25["<b>25. Ignore Case</b><br/>대소문자 무시 취소<br/><i>git config</i>"]
-    A26["<b>26. Rebase -i</b><br/>다수 커밋 합치기<br/><i>git rebase -i</i>"]
+    A25["<b>25. Ignore Case</b><br/>대소문자 인식 켜기<br/><i>git config</i>"]
+    A26["<b>26. Rebase -i</b><br/>여러 커밋 합치기<br/><i>git rebase -i</i>"]
 
-    %% 6. 원격 계정 및 기적의 복구
-    A27["<b>27. Amend Author</b><br/>작성자 정보 변경<br/><i>git commit --amend</i>"]
+    A27["<b>27. Amend Author</b><br/>작성자 변경<br/><i>git commit --amend</i>"]
     A28["<b>28. Set URL</b><br/>원격 주소 변경<br/><i>git remote set-url</i>"]
-    A29["<b>29. Show</b><br/>과거 내용 확인<br/><i>git show</i>"]
-    A30["<b>30. Reflog</b><br/>해시 강제 복원<br/><i>git reflog</i>"]
-
+    A29["<b>29. Show</b><br/>과거 파일 내용 확인<br/><i>git show</i>"]
+    A30["<b>30. Reflog</b><br/>날려먹은 해시 복원<br/><i>git reflog</i>"]
 
     %% =======================
-    %% ➡️ 상태 -> 액션 -> 상태 흐름
+    %% 순서 강제 (투명 링크)
     %% =======================
-    
-    %% 정방향 트리거 (설명용 가짜 액션은 생략하고 번호 매핑 위주로 구성)
-    
-    %% 카테고리 1
+    S_UNMOD ~~~ S_MOD ~~~ S_STG ~~~ S_COM ~~~ S_REM
+
+    %% =======================
+    %% 화살표 연결
+    %% =======================
+    S_UNMOD -.->|"코드 편집"| S_MOD
+    S_MOD -.->|"git add"| S_STG
+    S_STG -.->|"git commit"| S_COM
+    S_COM -.->|"git push"| S_REM
+
     S_MOD --> A1 --> S_UNMOD
     S_MOD --> A2 --> S_UNMOD
     S_STG --> A3 --> S_MOD
     S_STG --> A4 --> S_MOD
     S_MOD --> A5 --> S_UNMOD
-    
-    %% 카테고리 2
+
+    S_COM -.-> A6 -.-> S_COM
+    S_COM -.-> A7 -.-> S_COM
     S_COM --> A8 --> S_STG
     S_COM --> A9 --> S_MOD
     S_COM --> A10 --> S_UNMOD
     S_REM --> A11 --> S_COM
+
+    S_COM -.-> A12 -.-> S_COM
+    S_COM -.-> A13 -.-> S_COM
+    S_REM -.-> A14 -.-> S_REM
+    S_MOD -.-> A15 -.-> S_MOD
+    S_COM -.-> A16 -.-> S_COM
     
-    %% 상태 루프
-    S_COM --> A6 --> S_COM
-    S_COM --> A7 --> S_COM
-    S_COM --> A12 --> S_COM
-    S_COM --> A13 --> S_UNMOD
-    S_REM --> A14 --> S_REM
-    S_MOD --> A15 --> S_MOD
-    S_COM --> A16 --> S_COM
     S_MOD --> A17 --> S_UNMOD
     S_MOD --> A18 --> S_COM
     S_COM --> A19 --> S_REM
-    
-    %% 카테고리 4 (Stash)
+
     S_MOD --> A20 --> S_STASH
     S_STASH --> A21 --> S_MOD
-    S_STASH --> A22 --> S_STASH
+    S_STASH -.-> A22 -.-> S_STASH
     S_STASH --> A23 --> S_UNMOD
-    
-    %% 카테고리 5 & 6
+
     S_COM --> A24 --> S_MOD
-    S_MOD --> A25 --> S_MOD
-    S_COM --> A26 --> S_COM
-    S_COM --> A27 --> S_COM
-    S_REM --> A28 --> S_REM
-    S_COM --> A29 --> S_COM
-    
-    %% 최후의 보루
-    S_UNMOD -.-> A30 -.-> S_COM
+    S_MOD -.-> A25 -.-> S_MOD
+    S_COM -.-> A26 -.-> S_COM
+
+    S_COM -.-> A27 -.-> S_COM
+    S_REM -.-> A28 -.-> S_REM
+    S_COM -.-> A29 -.-> S_COM
+    S_UNMOD --> A30 --> S_COM
 
     %% =======================
-    %% 🎨 스타일 정의
+    %% 스타일 지정
     %% =======================
     classDef state fill:#ebf5fb,stroke:#2980b9,stroke-width:3px,color:#2c3e50
     classDef action fill:#fdfefe,stroke:#7f8c8d,stroke-width:2px,stroke-dasharray: 5 5,color:#34495e
     classDef dangerAction fill:#fdedec,stroke:#c0392b,stroke-width:2px,color:#922b21
 
-    %% 클래스 부여
     class S_UNMOD,S_MOD,S_STG,S_COM,S_REM,S_STASH state
-    
-    %% 위험한 액션 강조 (Hard Reset, Clean 등)
     class A1,A2,A10,A17,A19,A23,A24 dangerAction
-    
-    %% 기본 액션들
     class A3,A4,A5,A6,A7,A8,A9,A11,A12,A13,A14,A15,A16,A18,A20,A21,A22,A25,A26,A27,A28,A29,A30 action
 ```
 
